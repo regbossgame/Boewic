@@ -1,0 +1,133 @@
+﻿<!DOCTYPE html>
+
+<html>
+
+<head>
+    <title>Маршрут</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <script src="//api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <script src="http://code.jquery.com/jquery-1.10.2.js"></script>
+	<style>
+        html, body, #map {
+            width: 70%; height: 70%; padding: 0; margin: 0;
+        }
+    </style>
+</head>
+
+<body>
+
+<h2>Схема проезда в офис компании</h2>
+<script>
+		$(document).ready(function(){
+			function initAZA() {
+			
+    var multiRoute = new ymaps.multiRouter.MultiRoute({
+        referencePoints: [
+            [55.679085088161,37.898004909912],
+			[55.639578, 37.525208]
+        ],
+        params: {
+            routingMode: 'masstransit'
+        }
+    }, {
+        // Автоматически устанавливать границы карты так, чтобы маршрут был виден целиком.
+        boundsAutoApply: true
+    });
+			
+			// Создаем модель мультимаршрута.
+			    var multiRouteModel = new ymaps.multiRouter.MultiRouteModel([
+			        [55.679085088161,37.898004909912],
+			        [55.639578, 37.525208]
+			    ], {
+			        wayPointDraggable: true, // Путевые точки можно перетаскивать.
+			        boundsAutoApply: true, // Маршрут при этом будет перестраиваться.
+					autoFitToViewport: 'always'
+			    });
+
+				// Устанавливаем обещественный транспорт
+				// в модель мультимаршрута
+				multiRouteModel.setParams({ routingMode: 'masstransit' }, true);
+				
+			    // Создаем кнопку, переключающую модель в режим
+			    // маршрутизации на автомобиле
+			    var masstransitButton = new ymaps.control.Button({
+			        data: { content: "На автомобиле"},
+			        options: { selectOnClick: true }
+			    });
+
+			    // Объявляем обработчики для кнопки.
+			    masstransitButton.events.add('select', function () {
+					multiRouteModel.setParams({ routingMode: 'auto' }, false,true);
+					window.setInterval(foc, 800);
+			    });
+
+			    masstransitButton.events.add('deselect', function () {
+					multiRouteModel.setParams({ routingMode: 'masstransit' }, false,true);
+					window.setInterval(foc, 800);
+			    });
+
+				function foc(){
+				myMap.setBounds(myMap.geoObjects.getBounds());
+				}
+				
+			    ymaps.modules.require([
+			        'MultiRouteCustomView'
+			    ], function (MultiRouteCustomView) {
+			        // Создаем экземпляр текстового отображения модели мультимаршрута.
+			        // см. файл custom_view.js
+			        new MultiRouteCustomView(multiRouteModel);
+			    });
+
+			    // Создаем карту с добавленной на нее кнопкой.
+			    
+			    var myMap = new ymaps.Map('map', {
+			        center: [55.639578, 37.525208],
+			        zoom: 10,
+			        controls: [masstransitButton]
+			    }, {
+			        buttonMaxWidth: 300
+			    });
+
+			    // Создаем на основе существующей модели мультимаршрут.
+			    var multiRoute = new ymaps.multiRouter.MultiRoute(multiRouteModel, {
+			        // Путевые точки можно перетаскивать.
+			        // Маршрут при этом будет перестраиваться.
+			        boundsAutoApply: true,
+			        wayPointVisible:true,
+					autoFitToViewport: 'always'
+			    });
+
+			    // Добавляем мультимаршрут на карту.
+			   // myMap.geoObjects.removeAll();
+			    myMap.geoObjects.add(multiRoute);
+			   // myMap.setBounds(myMap.geoObjects.getBounds());
+				//map.container.fitToViewport();
+				
+			    myMap.geoObjects.add(new ymaps.Placemark([55.679085088161,37.898004909912], {
+		            iconCaption: 'Люберцы'
+		        }, {
+		            preset: 'islands#redDotIconWithCaption'
+		        }));
+			    
+			    myMap.geoObjects.add(new ymaps.Placemark([55.639578, 37.525208], {
+		            balloonContent: 'г. Москва, ул. Профсоюзная д.93а <br> <img src="http://www.hebelblok.ru/img/logo15.jpg">',
+		            iconCaption: 'Офис ООО "Хебель-Блок"'
+			        
+		        }, {
+		            preset: 'islands#greenDotIconWithCaption'
+		        }));
+			}
+			
+			ymaps.ready(initAZA);
+		});
+		
+
+</script>
+
+
+<div id="map"></div>
+
+
+</body>
+
+</html>
